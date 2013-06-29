@@ -1,0 +1,14 @@
+{
+    "name": "jimbojsb/dolphin",
+    "description": "PDO/MySQL DAL & Object Hydrator",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Josh Butts",
+            "email": "josh@joshbutts.com"
+        }
+    ],
+    "require": {
+
+    }
+}
