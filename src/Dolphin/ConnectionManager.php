@@ -6,23 +6,21 @@ class ConnectionManager
     protected $connections = [];
     protected $defaultConnection;
 
-    public function __construct()
+    public function __call($func, $args)
     {
-
+        $connectionObj = $this->connections[$this->defaultConnection];
+        if (method_exists($connectionObj, $func)) {
+            call_user_func_array([$connectionObj, $func], $args);
+        }
     }
 
-    public function addConnection($connectionName, $connection)
+    public function addConnection($connectionName, Connection $connection)
     {
-
+        $this->connections[$connectionName] = $connection;
     }
 
-    public function removeConnection($connectionName)
+    public function __invoke($connection)
     {
-
-    }
-
-    public function __invoke($connection = null)
-    {
-
+        return $this->connections[$connection];
     }
 }

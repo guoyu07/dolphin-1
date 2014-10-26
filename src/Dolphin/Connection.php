@@ -3,18 +3,76 @@ namespace Dolphin;
 
 class Connection
 {
-    private $pdo;
+    protected $mysqli;
 
-    public function __construct(\PDO $pdo)
+    public function __construct($hostname, $username, $password, $database = null)
     {
-        $this->pdo = $pdo;
+        $this->mysqli = new \mysqli($hostname, $username, $password, $database);
     }
 
-    public function query($sql, $params = [])
+    protected function query($sql, $params = [])
     {
-        $statement = $this->pdo->prepare($sql);
-        $statement->execute($params);
-        return new Result($statement, $this->pdo);
+        // detect if params is a hash or an array to determine statement preparation steps
+        $emulatedNamedParameters = false;
+        if (array_values($params) != $params) {
+            $emulatedNamedParameters = true;
+        }
+
+        if ($emulatedNamedParameters) {
+            $actualParameters = [];
+            preg_replace_callback(`:(\w+)`, function($matches) use (&$actualParameters, $params) {
+                $actualParameters[] = $params[$matches[1]];
+                return "?";
+            }, $sql);
+        } else {
+            $actualParameters = $params;
+        }
+
+        $stmt = $this->mysqli->prepare($sql);
+
+        $bindFormatString = "";
+        foreach ($actualParameters as $parameter) {
+            if (is_int($parameter)) {
+                $bindFormatString .= "i";
+            } else if (is_double($parameter) || is_float($parameter)) {
+                $bindFormatString .= "d";
+            } else {
+                $bindFormatString .= "s";
+            }
+        }
+        $bindArgs = $actualParameters;
+        array_unshift($bindArgs, $bindFormatString);
+
+        call_user_func_array([$stmt, 'bind_param'], $bindArgs);
+        $stmt->execute();
+        $stmt->store_result();
+        $results =
+        $stmt->close();
+    }
+
+    public function fetchAll($sql, $params)
+    {
+
+    }
+
+    public function fetchRow($sql, $params)
+    {
+
+    }
+
+    public function fetchColumn($sql, $params)
+    {
+
+    }
+
+    public function fetchValue($sql, $params)
+    {
+
+    }
+
+    public function fetchKeyVal($sql, $params)
+    {
+
     }
 
     public function find($table, array $criteria)
@@ -69,11 +127,6 @@ class Connection
     }
 
     public function upsert($table, array $criteria, array $data)
-    {
-
-    }
-
-    public static function pdoFactory($connectionString)
     {
 
     }
