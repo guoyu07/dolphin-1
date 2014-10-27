@@ -111,6 +111,8 @@ class Statement implements \IteratorAggregate
 
     public function __destruct()
     {
-        $this->statement->close();
+        if ($this->statement) {
+            $this->statement->close();
+        }
     }
 }
