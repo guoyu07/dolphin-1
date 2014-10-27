@@ -1,6 +1,8 @@
 <?php
-$cm = new Dolphin\ConnectionManager();
-$cm->addConnection($pdo, 'default');
-$cm('default')->query("SELECT * FROM foo LIMIT 1")->asObject();
+require_once __DIR__ . '/vendor/autoload.php';
 
-$cm()->delete('items', ['foo' => 'bar']);
+$conn = new Dolphin\Connection("localhost", "root", "", "offers_site");
+foreach ($conn->fetchColumn("SELECT id FROM categories") as $col) {
+    echo $col . "\n";
+}
+

@@ -1,6 +1,6 @@
 {
     "name": "jimbojsb/dolphin",
-    "description": "PDO/MySQL DAL & Object Hydrator",
+    "description": "PHP Mysqli helper library",
     "license": "MIT",
     "authors": [
         {
@@ -8,13 +8,6 @@
             "email": "josh@joshbutts.com"
         }
     ],
-    "require": {
-
-    },
-    "require-dev": {
-        "phpunit/phpunit": "3.7.*",
-        "jimbojsb/pseudo": "dev-master"
-    },
     "autoload": {
         "psr-0": {
             "Dolphin": "src/"

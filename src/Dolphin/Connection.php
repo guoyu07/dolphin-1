@@ -3,6 +3,7 @@ namespace Dolphin;
 
 class Connection
 {
+    /** @var \mysqli */
     protected $mysqli;
 
     public function __construct($hostname, $username, $password, $database = null)
@@ -10,59 +11,33 @@ class Connection
         $this->mysqli = new \mysqli($hostname, $username, $password, $database);
     }
 
-    protected function query($sql, $params = [])
+    public function query($sql, $params = [])
     {
-        // detect if params is a hash or an array to determine statement preparation steps
-        $emulatedNamedParameters = false;
-        if (array_values($params) != $params) {
-            $emulatedNamedParameters = true;
-        }
-
-        if ($emulatedNamedParameters) {
-            $actualParameters = [];
-            preg_replace_callback(`:(\w+)`, function($matches) use (&$actualParameters, $params) {
-                $actualParameters[] = $params[$matches[1]];
-                return "?";
-            }, $sql);
-        } else {
-            $actualParameters = $params;
-        }
-
-        $stmt = $this->mysqli->prepare($sql);
-
-        $bindFormatString = "";
-        foreach ($actualParameters as $parameter) {
-            if (is_int($parameter)) {
-                $bindFormatString .= "i";
-            } else if (is_double($parameter) || is_float($parameter)) {
-                $bindFormatString .= "d";
-            } else {
-                $bindFormatString .= "s";
-            }
-        }
-        $bindArgs = $actualParameters;
-        array_unshift($bindArgs, $bindFormatString);
-
-        call_user_func_array([$stmt, 'bind_param'], $bindArgs);
-        $stmt->execute();
-        $stmt->store_result();
-        $results =
-        $stmt->close();
+        $statement = new Statement($this->mysqli, $sql, $params);
+        $statement->execute();
+        return $statement;
     }
 
-    public function fetchAll($sql, $params)
+    public function fetchAll($sql, $params = [])
     {
-
+        return $this->query($sql, $params)->fetchAll();
     }
 
-    public function fetchRow($sql, $params)
+    public function fetchObjects($sql, $params, $class = null)
     {
-
+        if ($class === null) {
+            $class = \stdClass::class;
+        }
     }
 
-    public function fetchColumn($sql, $params)
+    public function fetchRow($sql, $params = [])
     {
+        return $this->query($sql, $params)->fetchRow();
+    }
 
+    public function fetchColumn($sql, $params = [])
+    {
+        return $this->query($sql, $params)->fetchColumn();
     }
 
     public function fetchValue($sql, $params)
